@@ -1,115 +1,124 @@
+import { Scene, Input, GameObjects, Physics } from "phaser";
 import { EventBus } from "../EventBus";
-import { Scene } from "phaser";
 
 export class Workroom extends Scene {
-    private player!: Phaser.Physics.Arcade.Sprite;
-    private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-
+    private keys: any;
+    private player: Phaser.GameObjects.Rectangle & {
+        body: Physics.Arcade.Body;
+    };
     constructor() {
         super("Workroom");
     }
 
+    preload() {
+        this.load.tilemapTiledJSON("workroom", "/assets/map/workroom.json");
+        this.load.image("interior", "assets/tiles/interior.png");
+    }
+
     create() {
-        this.cameras.main.setBackgroundColor(0x1f1b24);
+        const map = this.make.tilemap({ key: "workroom" });
 
-        this.createRoom();
-        this.createPlayer();
-        this.createKeyboard();
+        const tileset = map.addTilesetImage("interior", "interior");
 
-        EventBus.emit("current-scene-ready", this);
+        if (!tileset) {
+            throw new Error("interior 타일셋을 찾지 못하였습니다.");
+        }
+        map.createLayer("floor", tileset, 0, 0);
+        map.createLayer("wall", tileset, 0, 0);
+        map.createLayer("furniture", tileset, 0, 0);
+
+        this.cameras.main.setZoom(3);
+        this.cameras.main.centerOn(
+            map.widthInPixels / 2,
+            map.heightInPixels / 2,
+        );
+        // this.cameras.main.setZoom(3);
+        this.cameras.main.setBackgroundColor("#d8c2aa");
+
+        this.add.rectangle(512, 420, 500, 360, 0xc99f70); // 방
+        this.add.rectangle(512, 290, 200, 100, 0x9a6e4d); // 책상
+        this.add.rectangle(510, 390, 50, 50, 0x9a6e4d); // 의자
+        this.add.rectangle(510, 290, 40, 40, 0x4e7ca5);
+        const player = this.add.rectangle(96, 120, 12, 12, 0x4f86b3);
+        this.physics.add.existing(player);
+        this.player = player as GameObjects.Rectangle & {
+            body: Physics.Arcade.Body;
+        };
+
+        const collisionLayer = map.getObjectLayer("collision");
+        const collisionGroup = this.physics.add.staticGroup();
+
+        collisionLayer?.objects.forEach((object) => {
+            if (
+                object.x === undefined ||
+                object.y === undefined ||
+                object.width === undefined ||
+                object.height === undefined
+            ) {
+                return;
+            }
+
+            const collisionBox = this.add.rectangle(
+                object.x + object.width / 2,
+                object.y + object.height / 2,
+                object.width,
+                object.height,
+            );
+
+            collisionBox.setVisible(false);
+
+            this.physics.add.existing(collisionBox, true);
+            collisionGroup.add(collisionBox);
+        });
+
+        this.physics.add.collider(this.player, collisionGroup);
+
+        this.keys = this.input.keyboard?.addKeys({
+            W: Input.Keyboard.KeyCodes.W,
+            A: Input.Keyboard.KeyCodes.A,
+            S: Input.Keyboard.KeyCodes.S,
+            D: Input.Keyboard.KeyCodes.D,
+            E: Input.Keyboard.KeyCodes.E,
+        });
+
+        // this.add
+        //     .text(512, 100, "SUYEON'S WORKROOM", {
+        //         fontFamily: "Arial",
+        //         fontSize: "32px",
+        //         color: "#2f2926",
+        //     })
+        //     .setOrigin(0.5);
+
+        // EventBus.emit("current-scene-ready", this);
     }
 
     update() {
-        this.movePlayer();
-    }
-
-    private createRoom() {
-        // 작업실 외곽
-        const room = this.add.rectangle(512, 384, 900, 650, 0xd8c2aa);
-
-        room.setStrokeStyle(12, 0x46382f);
-
-        // 벽
-        this.add.rectangle(512, 170, 880, 220, 0xcbb49e);
-
-        // 바닥
-        this.add.rectangle(512, 480, 880, 420, 0x9a765e);
-
-        // 임시 책상
-        this.add.rectangle(260, 280, 240, 80, 0x654b3a);
-
-        // 임시 모니터
-        this.add.rectangle(260, 220, 110, 70, 0x292936);
-
-        // 임시 책장
-        this.add.rectangle(790, 280, 130, 250, 0x70503c);
-
-        // 제목
-        this.add
-            .text(512, 90, "SUYEON'S DEVELOPER WORKROOM", {
-                fontFamily: "Arial",
-                fontSize: "28px",
-                color: "#ffffff",
-                fontStyle: "bold",
-            })
-            .setOrigin(0.5);
-    }
-
-    private createPlayer() {
-        const graphics = this.make.graphics(
-            {
-                x: 0,
-                y: 0,
-            },
-            false,
-        );
-
-        graphics.fillStyle(0x292936);
-        graphics.fillRoundedRect(0, 0, 36, 52, 8);
-
-        graphics.fillStyle(0xf1c5a4);
-        graphics.fillCircle(18, 13, 10);
-
-        graphics.generateTexture("player-placeholder", 36, 52);
-
-        graphics.destroy();
-
-        this.player = this.physics.add.sprite(512, 520, "player-placeholder");
-
-        this.player.setCollideWorldBounds(true);
-
-        this.physics.world.setBounds(62, 59, 900, 650);
-    }
-
-    private createKeyboard() {
-        if (!this.input.keyboard) {
-            throw new Error("Keyboard input is unavailable.");
-        }
-
-        this.cursors = this.input.keyboard.createCursorKeys();
-    }
-
-    private movePlayer() {
-        const speed = 180;
-
-        this.player.setVelocity(0);
-
-        if (this.cursors.left.isDown) {
-            this.player.setVelocityX(-speed);
-        } else if (this.cursors.right.isDown) {
-            this.player.setVelocityX(speed);
-        }
-
-        if (this.cursors.up.isDown) {
-            this.player.setVelocityY(-speed);
-        } else if (this.cursors.down.isDown) {
-            this.player.setVelocityY(speed);
-        }
-
+        const speed = 120;
         const body = this.player.body;
+        body.setVelocity(0);
 
-        if (body instanceof Phaser.Physics.Arcade.Body) {
-            body.velocity.normalize().scale(speed);
-        }
+        if (this.keys.W.isDown) body.setVelocityY(-speed);
+        if (this.keys.S.isDown) body.setVelocityY(speed);
+        if (this.keys.A.isDown) body.setVelocityX(-speed);
+        if (this.keys.D.isDown) body.setVelocityX(speed);
+
+        this.player.body.velocity.normalize().scale(speed);
+        // if (this.keys.W.isDown) {
+        //     console.log("w is pressed");
+        //     this.player.y -= 1;
+        // }
+        // if (this.keys.S.isDown) {
+        //     this.player.y += 1;
+        // }
+        // if (this.keys.A.isDown) {
+        //     this.player.x -= 1;
+        // }
+        // if (this.keys.D.isDown) {
+        //     this.player.x += 1;
+        // }
+        // if (this.keys.E.isDown) {
+        //     console.log("e is pressed");
+        // }
     }
 }
+

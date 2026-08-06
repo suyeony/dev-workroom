@@ -38,7 +38,7 @@ export class MainMenu extends Scene {
             this.logoTween = null;
         }
 
-        this.scene.start("Mainroom");
+        this.scene.start("Workroom");
     }
 
     moveLogo(vueCallback: ({ x, y }: { x: number; y: number }) => void) {
