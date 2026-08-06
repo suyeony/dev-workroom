@@ -3,9 +3,8 @@ import { EventBus } from "../EventBus";
 
 export class Workroom extends Scene {
     private keys: any;
-    private player: Phaser.GameObjects.Rectangle & {
-        body: Physics.Arcade.Body;
-    };
+    private player!: Physics.Arcade.Sprite;
+    private lastDirection: "up" | "down" | "left" | "right" = "down";
     constructor() {
         super("Workroom");
     }
@@ -13,6 +12,10 @@ export class Workroom extends Scene {
     preload() {
         this.load.tilemapTiledJSON("workroom", "/assets/map/workroom.json");
         this.load.image("interior", "assets/tiles/interior.png");
+        this.load.spritesheet("player", "/assets/player/player.png", {
+            frameWidth: 32,
+            frameHeight: 32,
+        });
     }
 
     create() {
@@ -39,11 +42,51 @@ export class Workroom extends Scene {
         this.add.rectangle(512, 290, 200, 100, 0x9a6e4d); // 책상
         this.add.rectangle(510, 390, 50, 50, 0x9a6e4d); // 의자
         this.add.rectangle(510, 290, 40, 40, 0x4e7ca5);
-        const player = this.add.rectangle(96, 120, 12, 12, 0x4f86b3);
-        this.physics.add.existing(player);
-        this.player = player as GameObjects.Rectangle & {
-            body: Physics.Arcade.Body;
-        };
+        // const player = this.add.rectangle(96, 120, 12, 12, 0x4f86b3);
+        this.player = this.physics.add.sprite(96, 120, "player", 0);
+        const body = this.player.body;
+        if (body instanceof Physics.Arcade.Body) {
+            body.setSize(14, 10);
+            body.setOffset(9, 20);
+        }
+        this.anims.create({
+            key: "walk-down",
+            frames: this.anims.generateFrameNumbers("player", {
+                start: 0,
+                end: 3,
+            }),
+            frameRate: 8,
+            repeat: -1,
+        });
+        this.anims.create({
+            key: "walk-left",
+            frames: this.anims.generateFrameNumbers("player", {
+                start: 4,
+                end: 7,
+            }),
+            frameRate: 8,
+            repeat: -1,
+        });
+
+        this.anims.create({
+            key: "walk-right",
+            frames: this.anims.generateFrameNumbers("player", {
+                start: 8,
+                end: 11,
+            }),
+            frameRate: 8,
+            repeat: -1,
+        });
+
+        this.anims.create({
+            key: "walk-up",
+            frames: this.anims.generateFrameNumbers("player", {
+                start: 12,
+                end: 15,
+            }),
+            frameRate: 8,
+            repeat: -1,
+        });
 
         const collisionLayer = map.getObjectLayer("collision");
         const collisionGroup = this.physics.add.staticGroup();
@@ -94,31 +137,42 @@ export class Workroom extends Scene {
 
     update() {
         const speed = 120;
+        // const body = this.player.body;
+        this.player.setVelocity(0);
+
+        if (this.keys.W.isDown) {
+            this.player.setVelocityY(-speed);
+            this.player.anims.play("walk-up", true);
+            this.lastDirection = "up";
+        } else if (this.keys.S.isDown) {
+            this.player.setVelocityY(speed);
+            this.player.anims.play("walk-down", true);
+            this.lastDirection = "down";
+        } else if (this.keys.A.isDown) {
+            this.player.setVelocityX(-speed);
+            this.player.anims.play("walk-left", true);
+            this.lastDirection = "left";
+        } else if (this.keys.D.isDown) {
+            this.player.setVelocityX(speed);
+            this.player.anims.play("walk-right", true);
+            this.lastDirection = "right";
+        } else {
+            this.player.anims.stop();
+            const idleFrames = {
+                down: 0,
+                left: 4,
+                right: 8,
+                up: 12,
+            };
+
+            this.player.setFrame(idleFrames[this.lastDirection]);
+        }
+
         const body = this.player.body;
-        body.setVelocity(0);
 
-        if (this.keys.W.isDown) body.setVelocityY(-speed);
-        if (this.keys.S.isDown) body.setVelocityY(speed);
-        if (this.keys.A.isDown) body.setVelocityX(-speed);
-        if (this.keys.D.isDown) body.setVelocityX(speed);
-
-        this.player.body.velocity.normalize().scale(speed);
-        // if (this.keys.W.isDown) {
-        //     console.log("w is pressed");
-        //     this.player.y -= 1;
-        // }
-        // if (this.keys.S.isDown) {
-        //     this.player.y += 1;
-        // }
-        // if (this.keys.A.isDown) {
-        //     this.player.x -= 1;
-        // }
-        // if (this.keys.D.isDown) {
-        //     this.player.x += 1;
-        // }
-        // if (this.keys.E.isDown) {
-        //     console.log("e is pressed");
-        // }
+        if (body instanceof Physics.Arcade.Body && body.velocity.length() > 0) {
+            body.velocity.normalize().scale(speed);
+        }
     }
 }
 
