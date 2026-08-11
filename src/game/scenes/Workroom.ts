@@ -12,6 +12,8 @@ export class Workroom extends Scene {
     private portfolioPopup!: GameObjects.Container;
     private isPopupOpen = false;
     private selectedProjectIndex = 0;
+    private leftFooter!: GameObjects.Text;
+    private rightFooter!: GameObjects.Text;
     private projectListTexts: GameObjects.Text[] = [];
     private projectTitleText!: GameObjects.Text;
     private projectTechText!: GameObjects.Text;
@@ -125,16 +127,17 @@ export class Workroom extends Scene {
         }
 
         this.interactionText = this.add
-            .text(0, 0, "E 키를 눌러주세요", {
-                fontSize: "8px",
+            .text(0, 0, "[ E ]", {
+                fontSize: "24px",
                 color: "#ffffff",
                 backgroundColor: "#2f2926",
                 padding: {
-                    x: 4,
-                    y: 2,
+                    x: 12,
+                    y: 6,
                 },
             })
             .setOrigin(0.5)
+            .setScale(1 / 3)
             .setDepth(100)
             .setVisible(false);
 
@@ -161,9 +164,14 @@ export class Workroom extends Scene {
                 .setOrigin(0, 0.5);
         });
 
+        this.leftFooter = this.add.text(-250, 100, "W/S: SELECT", {
+            fontSize: "16px",
+            color: "#ffffff",
+        });
+
         const selectedProject = projects[this.selectedProjectIndex];
 
-        this.projectTitleText = this.add.text(40, -80, selectedProject.title, {
+        this.projectTitleText = this.add.text(40, -100, selectedProject.title, {
             fontSize: "16px",
             color: "#75a7d6",
         });
@@ -196,6 +204,11 @@ export class Workroom extends Scene {
             },
         );
 
+        this.rightFooter = this.add.text(40, 100, "ESC : Close", {
+            fontSize: "16px",
+            color: "#ffffff",
+        });
+
         const openButton = this.add
             .text(0, 10, "포트폴리오 열기", {
                 fontSize: "9px",
@@ -222,6 +235,8 @@ export class Workroom extends Scene {
                 popupBg,
                 title,
                 ...this.projectListTexts,
+                this.leftFooter,
+                this.rightFooter,
                 this.projectTitleText,
                 this.projectTechText,
                 this.projectDescriptionText,
@@ -234,7 +249,7 @@ export class Workroom extends Scene {
             .setScale(1 / 3)
             .setVisible(false);
 
-        const project = projects[this.selectedProjectIndex];
+        // const project = projects[this.selectedProjectIndex];
 
         const collisionLayer = map.getObjectLayer("collision");
         const collisionGroup = this.physics.add.staticGroup();
@@ -270,6 +285,7 @@ export class Workroom extends Scene {
             S: Input.Keyboard.KeyCodes.S,
             D: Input.Keyboard.KeyCodes.D,
             E: Input.Keyboard.KeyCodes.E,
+            ESC: Input.Keyboard.KeyCodes.ESC,
         });
     }
 
@@ -301,13 +317,23 @@ export class Workroom extends Scene {
         this.player.setVelocity(0);
         // 팝업이 열려있는 경우
         if (this.isPopupOpen) {
-            if (this.keys.W.isDown) {
-                this.updateProjectInfo();
-            }
-        } else if (this.keys.S.isDown) {
-            this.updateProjectInfo();
-        }
+            if (Input.Keyboard.JustDown(this.keys.W)) {
+                if (this.selectedProjectIndex === 0) {
+                    this.selectedProjectIndex = projects.length - 1;
+                } else this.selectedProjectIndex -= 1;
 
+                this.updateProjectInfo();
+            } else if (Input.Keyboard.JustDown(this.keys.S)) {
+                if (this.selectedProjectIndex === projects.length - 1) {
+                    this.selectedProjectIndex = 0;
+                } else this.selectedProjectIndex += 1;
+
+                this.updateProjectInfo();
+            } else if (Input.Keyboard.JustDown(this.keys.ESC)) {
+                this.isPopupOpen = false;
+                this.portfolioPopup.setVisible(false);
+            }
+        }
         if (this.keys.W.isDown) {
             this.player.setVelocityY(-speed);
             this.player.anims.play("walk-up", true);
@@ -347,7 +373,7 @@ export class Workroom extends Scene {
         );
         this.interactionText.setPosition(
             this.computerZone.x,
-            this.computerZone.y - 20,
+            this.computerZone.y - 40,
         );
 
         this.isNearComputer = this.physics.overlap(
@@ -356,10 +382,7 @@ export class Workroom extends Scene {
         );
 
         if (this.isNearComputer && Input.Keyboard.JustDown(this.keys.E)) {
-            console.log("computer interaction!");
             this.isPopupOpen = true;
-            console.log("isPopupOpen?", this.isPopupOpen);
-
             this.portfolioPopup.setVisible(true);
         }
 
