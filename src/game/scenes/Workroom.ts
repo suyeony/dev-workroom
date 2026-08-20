@@ -4,6 +4,7 @@ import { projects } from "../data/projects";
 
 export class Workroom extends Scene {
     private keys: any;
+    private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     private player!: Physics.Arcade.Sprite;
     private lastDirection: "up" | "down" | "left" | "right" = "down";
     private computerZone!: GameObjects.Zone;
@@ -214,7 +215,7 @@ export class Workroom extends Scene {
         });
 
         this.projectOpenButton = this.add
-            .text(40, 55, "자세히 보기", {
+            .text(40, 55, "자세히 보기 ↗", {
                 fontSize: "11px",
                 color: "#ffffff",
             })
@@ -288,6 +289,8 @@ export class Workroom extends Scene {
             E: Input.Keyboard.KeyCodes.E,
             ESC: Input.Keyboard.KeyCodes.ESC,
         });
+
+        this.cursors = this.input.keyboard!.createCursorKeys();
     }
 
     private updateProjectInfo() {
@@ -335,19 +338,19 @@ export class Workroom extends Scene {
                 this.portfolioPopup.setVisible(false);
             }
         }
-        if (this.keys.W.isDown) {
+        if (this.cursors.up.isDown) {
             this.player.setVelocityY(-speed);
             this.player.anims.play("walk-up", true);
             this.lastDirection = "up";
-        } else if (this.keys.S.isDown) {
+        } else if (this.cursors.down.isDown) {
             this.player.setVelocityY(speed);
             this.player.anims.play("walk-down", true);
             this.lastDirection = "down";
-        } else if (this.keys.A.isDown) {
+        } else if (this.cursors.left.isDown) {
             this.player.setVelocityX(-speed);
             this.player.anims.play("walk-left", true);
             this.lastDirection = "left";
-        } else if (this.keys.D.isDown) {
+        } else if (this.cursors.right.isDown) {
             this.player.setVelocityX(speed);
             this.player.anims.play("walk-right", true);
             this.lastDirection = "right";
