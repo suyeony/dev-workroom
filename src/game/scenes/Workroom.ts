@@ -19,6 +19,7 @@ export class Workroom extends Scene {
     private projectTechText!: GameObjects.Text;
     private projectDescriptionText!: GameObjects.Text;
     private projectHighlightsText!: GameObjects.Text;
+    private projectOpenButton!: GameObjects.Text;
 
     constructor() {
         super("Workroom");
@@ -171,59 +172,58 @@ export class Workroom extends Scene {
 
         const selectedProject = projects[this.selectedProjectIndex];
 
-        this.projectTitleText = this.add.text(40, -100, selectedProject.title, {
-            fontSize: "16px",
-            color: "#75a7d6",
-        });
+        this.projectTitleText = this.add
+            .text(40, -100, selectedProject.title, {
+                fontSize: "16px",
+                color: "#75a7d6",
+            })
+            .setOrigin(0, 0.5);
 
-        this.projectTechText = this.add.text(40, -55, selectedProject.tech, {
-            fontSize: "11px",
-            color: "#ffffff",
-        });
+        this.projectTechText = this.add
+            .text(40, -60, selectedProject.tech, {
+                fontSize: "11px",
+                color: "#ffffff",
+            })
+            .setOrigin(0, 0.5);
 
-        this.projectDescriptionText = this.add.text(
-            40,
-            -25,
-            selectedProject.description,
-            {
+        this.projectDescriptionText = this.add
+            .text(40, -30, selectedProject.description, {
                 fontSize: "12px",
                 color: "#ffffff",
-            },
-        );
+            })
+            .setOrigin(0, 0.5);
 
-        this.projectHighlightsText = this.add.text(
-            40,
-            10,
-            selectedProject.highlights
-                .map((highlight) => `· ${highlight}`)
-                .join("\n"),
-            {
-                fontSize: "11px",
-                color: "#d1d5db",
-                lineSpacing: 4,
-            },
-        );
+        this.projectHighlightsText = this.add
+            .text(
+                40,
+                5,
+                selectedProject.highlights
+                    .map((highlight) => `· ${highlight}`)
+                    .join("\n"),
+                {
+                    fontSize: "11px",
+                    color: "#d1d5db",
+                    lineSpacing: 4,
+                },
+            )
+            .setOrigin(0, 0.5);
 
-        this.rightFooter = this.add.text(40, 100, "ESC : Close", {
+        this.rightFooter = this.add.text(130, 100, "ESC : Close", {
             fontSize: "16px",
             color: "#ffffff",
         });
 
-        const openButton = this.add
-            .text(0, 10, "포트폴리오 열기", {
-                fontSize: "9px",
+        this.projectOpenButton = this.add
+            .text(40, 55, "자세히 보기", {
+                fontSize: "11px",
                 color: "#ffffff",
-                backgroundColor: "#4e7ca5",
-                padding: {
-                    x: 8,
-                    y: 5,
-                },
             })
-            .setOrigin(0.5)
+            .setOrigin(0, 0.5)
             .setInteractive({ useHandCursor: true });
 
-        openButton.on("pointerdown", () => {
-            window.open("포트폴리오_URL", "_blank");
+        this.projectOpenButton.on("pointerdown", () => {
+            const selectedProject = projects[this.selectedProjectIndex];
+            window.open(selectedProject.url, "_blank");
         });
 
         const camera = this.cameras.main;
@@ -241,6 +241,7 @@ export class Workroom extends Scene {
                 this.projectTechText,
                 this.projectDescriptionText,
                 this.projectHighlightsText,
+                this.projectOpenButton,
             ],
         );
 
