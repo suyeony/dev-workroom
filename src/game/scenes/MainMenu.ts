@@ -13,21 +13,107 @@ export class MainMenu extends Scene {
     }
 
     create() {
-        this.background = this.add.image(512, 384, "background");
+        this.cameras.main.setBackgroundColor("#000000");
+        // this.background = this.add.image(512, 384, "background");
+        // this.logo = this.add.image(512, 300, "logo").setDepth(100);
+        // this.title = this.add
+        //     .text(512, 460, "Main Menu", {
+        //         fontFamily: "Arial Black",
+        //         fontSize: 38,
+        //         color: "#ffffff",
+        //         stroke: "#000000",
+        //         strokeThickness: 8,
+        //         align: "center",
+        //     })
+        //     .setOrigin(0.5)
+        //     .setDepth(100);
+        const centerX = this.cameras.main.centerX;
 
-        this.logo = this.add.image(512, 300, "logo").setDepth(100);
-
-        this.title = this.add
-            .text(512, 460, "Main Menu", {
-                fontFamily: "Arial Black",
-                fontSize: 38,
+        const nameText = this.add
+            .text(centerX, 280, "", {
+                fontSize: "20px",
                 color: "#ffffff",
-                stroke: "#000000",
-                strokeThickness: 8,
-                align: "center",
+                fontFamily: "monospace",
+            })
+            .setOrigin(0.5);
+
+        const roleText = this.add
+            .text(centerX, 320, "", {
+                fontSize: "14px",
+                color: "#ffffff",
+                fontFamily: "monospace",
+            })
+            .setOrigin(0.5);
+
+        const portfolioText = this.add
+            .text(centerX, 350, "", {
+                fontSize: "14px",
+                color: "#ffffff",
+                fontFamily: "monospace",
+            })
+            .setOrigin(0.5);
+
+        const enterButton = this.add
+            .text(centerX, 410, "> ENTER WORKROOM", {
+                fontSize: "14px",
+                color: "#ffffff",
+                fontFamily: "monospace",
             })
             .setOrigin(0.5)
-            .setDepth(100);
+            .setVisible(false)
+            .setAlpha(1)
+            .setInteractive({ useHandCursor: true });
+
+        const typeText = (
+            textObject: Phaser.GameObjects.Text,
+            fullText: string,
+            callback?: () => void,
+        ) => {
+            let index = 0;
+
+            this.time.addEvent({
+                delay: 70,
+                repeat: fullText.length - 1,
+                callback: () => {
+                    index++;
+                    textObject.setText(fullText.slice(0, index));
+
+                    if (index === fullText.length) {
+                        callback?.();
+                    }
+                },
+            });
+        };
+        this.time.delayedCall(500, () => {
+            typeText(nameText, "YANG SUYEON", () => {
+                this.time.delayedCall(200, () => {
+                    typeText(roleText, "FRONTEND DEVELOPER", () => {
+                        this.time.delayedCall(200, () => {
+                            typeText(portfolioText, "PORTFOLIO", () => {
+                                // 여기까지 왔는지 확인
+                                // console.log("typing finished");
+
+                                this.time.delayedCall(400, () => {
+                                    enterButton.setVisible(true);
+
+                                    this.tweens.add({
+                                        targets: enterButton,
+                                        alpha: 0,
+                                        duration: 600,
+                                        yoyo: true,
+                                        repeat: 1,
+
+                                        onComplete: () => {
+                                            enterButton.setAlpha(1);
+                                        },
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
 
         EventBus.emit("current-scene-ready", this);
     }
