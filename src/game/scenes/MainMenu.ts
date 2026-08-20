@@ -64,6 +64,10 @@ export class MainMenu extends Scene {
             .setAlpha(1)
             .setInteractive({ useHandCursor: true });
 
+        enterButton.on("pointerdown", () => {
+            this.scene.start("Workroom");
+        });
+
         const typeText = (
             textObject: Phaser.GameObjects.Text,
             fullText: string,
