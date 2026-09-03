@@ -27,8 +27,16 @@ export class Workroom extends Scene {
     }
 
     preload() {
-        this.load.tilemapTiledJSON("workroom", "/assets/map/workroom.json");
-        this.load.image("interior", "assets/tiles/interior.png");
+        this.load.tilemapTiledJSON("workroom", "/assets/map/workroom2.json");
+        // this.load.image("interior", "assets/tiles/interior.png");
+        this.load.image(
+            "room_builder_office",
+            "assets/tiles/Room_Builder_Office.png",
+        );
+        this.load.image(
+            "modern_office_black_shadow",
+            "assets/tiles/Modern_Office_Black_Shadow.png",
+        );
         this.load.spritesheet("player", "/assets/player/player.png", {
             frameWidth: 32,
             frameHeight: 32,
@@ -38,14 +46,27 @@ export class Workroom extends Scene {
     create() {
         const map = this.make.tilemap({ key: "workroom" });
 
-        const tileset = map.addTilesetImage("interior", "interior");
+        // const tileset = map.addTilesetImage("interior", "interior");
+        const roomBuilder = map.addTilesetImage(
+            "Room_Builder_Office_16x16",
+            "room_builder_office",
+        );
+        const roomInterior = map.addTilesetImage(
+            "Modern_Office_Black_Shadow",
+            "modern_office_black_shadow",
+        );
 
-        if (!tileset) {
+        if (!roomBuilder || !roomInterior) {
             throw new Error("interior 타일셋을 찾지 못하였습니다.");
         }
-        map.createLayer("floor", tileset, 0, 0);
-        map.createLayer("wall", tileset, 0, 0);
-        map.createLayer("furniture", tileset, 0, 0);
+        const tilesets = [roomBuilder, roomInterior];
+        map.createLayer("floor", tilesets, 0, 0);
+        map.createLayer("wall", tilesets, 0, 0);
+        map.createLayer("outerLine", tilesets, 0, 0);
+        map.createLayer("furniture", tilesets, 0, 0);
+        map.createLayer("furniture2", tilesets, 0, 0);
+        map.createLayer("stuff", tilesets, 0, 0);
+        map.createLayer("stuff2", tilesets, 0, 0);
 
         this.cameras.main.setZoom(3);
         this.cameras.main.centerOn(
@@ -55,12 +76,12 @@ export class Workroom extends Scene {
         // this.cameras.main.setZoom(3);
         this.cameras.main.setBackgroundColor("#d8c2aa");
 
-        this.add.rectangle(512, 420, 500, 360, 0xc99f70); // 방
-        this.add.rectangle(512, 290, 200, 100, 0x9a6e4d); // 책상
-        this.add.rectangle(510, 390, 50, 50, 0x9a6e4d); // 의자
-        this.add.rectangle(510, 290, 40, 40, 0x4e7ca5);
+        // this.add.rectangle(512, 420, 500, 360, 0xc99f70); // 방
+        // this.add.rectangle(512, 290, 200, 100, 0x9a6e4d); // 책상
+        // this.add.rectangle(510, 390, 50, 50, 0x9a6e4d); // 의자
+        // this.add.rectangle(510, 290, 40, 40, 0x4e7ca5);
         // const player = this.add.rectangle(96, 120, 12, 12, 0x4f86b3);
-        this.player = this.physics.add.sprite(96, 120, "player", 0);
+        this.player = this.physics.add.sprite(96, 90, "player", 0);
         const body = this.player.body;
         if (body instanceof Physics.Arcade.Body) {
             body.setSize(14, 10);
@@ -253,33 +274,33 @@ export class Workroom extends Scene {
 
         // const project = projects[this.selectedProjectIndex];
 
-        const collisionLayer = map.getObjectLayer("collision");
-        const collisionGroup = this.physics.add.staticGroup();
+        // const collisionLayer = map.getObjectLayer("collision");
+        // const collisionGroup = this.physics.add.staticGroup();
 
-        collisionLayer?.objects.forEach((object) => {
-            if (
-                object.x === undefined ||
-                object.y === undefined ||
-                object.width === undefined ||
-                object.height === undefined
-            ) {
-                return;
-            }
+        // collisionLayer?.objects.forEach((object) => {
+        //     if (
+        //         object.x === undefined ||
+        //         object.y === undefined ||
+        //         object.width === undefined ||
+        //         object.height === undefined
+        //     ) {
+        //         return;
+        //     }
 
-            const collisionBox = this.add.rectangle(
-                object.x + object.width / 2,
-                object.y + object.height / 2,
-                object.width,
-                object.height,
-            );
+        //     const collisionBox = this.add.rectangle(
+        //         object.x + object.width / 2,
+        //         object.y + object.height / 2,
+        //         object.width,
+        //         object.height,
+        //     );
 
-            collisionBox.setVisible(false);
+        //     collisionBox.setVisible(false);
 
-            this.physics.add.existing(collisionBox, true);
-            collisionGroup.add(collisionBox);
-        });
+        //     this.physics.add.existing(collisionBox, true);
+        //     collisionGroup.add(collisionBox);
+        // });
 
-        this.physics.add.collider(this.player, collisionGroup);
+        // this.physics.add.collider(this.player, collisionGroup);
 
         this.keys = this.input.keyboard?.addKeys({
             W: Input.Keyboard.KeyCodes.W,
@@ -366,35 +387,35 @@ export class Workroom extends Scene {
             this.player.setFrame(idleFrames[this.lastDirection]);
         }
 
-        const body = this.player.body;
+        // const body = this.player.body;
 
-        if (body instanceof Physics.Arcade.Body && body.velocity.length() > 0) {
-            body.velocity.normalize().scale(speed);
-        }
+        // if (body instanceof Physics.Arcade.Body && body.velocity.length() > 0) {
+        //     body.velocity.normalize().scale(speed);
+        // }
 
-        this.interactionText.setVisible(
-            this.isNearComputer && !this.isPopupOpen,
-        );
-        this.interactionText.setPosition(
-            this.computerZone.x,
-            this.computerZone.y - 40,
-        );
+        // this.interactionText.setVisible(
+        //     this.isNearComputer && !this.isPopupOpen,
+        // );
+        // this.interactionText.setPosition(
+        //     this.computerZone.x,
+        //     this.computerZone.y - 40,
+        // );
 
-        this.isNearComputer = this.physics.overlap(
-            this.player,
-            this.computerZone,
-        );
+        // this.isNearComputer = this.physics.overlap(
+        //     this.player,
+        //     this.computerZone,
+        // );
 
-        if (this.isNearComputer && Input.Keyboard.JustDown(this.keys.E)) {
-            this.isPopupOpen = true;
-            this.portfolioPopup.setVisible(true);
-        }
+        // if (this.isNearComputer && Input.Keyboard.JustDown(this.keys.E)) {
+        //     this.isPopupOpen = true;
+        //     this.portfolioPopup.setVisible(true);
+        // }
 
-        if (this.isPopupOpen) {
-            this.player.setVelocity(0);
-            this.player.anims.stop();
-            return;
-        }
+        // if (this.isPopupOpen) {
+        //     this.player.setVelocity(0);
+        //     this.player.anims.stop();
+        //     return;
+        // }
     }
 }
 
