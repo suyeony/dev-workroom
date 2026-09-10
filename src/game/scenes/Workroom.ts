@@ -21,6 +21,12 @@ export class Workroom extends Scene {
     private projectDescriptionText!: GameObjects.Text;
     private projectHighlightsText!: GameObjects.Text;
     private projectOpenButton!: GameObjects.Text;
+    private furniture2:
+        | Phaser.Tilemaps.TilemapLayer
+        | Phaser.Tilemaps.TilemapGPULayer;
+    private stuff:
+        | Phaser.Tilemaps.TilemapLayer
+        | Phaser.Tilemaps.TilemapGPULayer;
 
     constructor() {
         super("Workroom");
@@ -64,17 +70,15 @@ export class Workroom extends Scene {
         map.createLayer("wall", tilesets, 0, 0);
         map.createLayer("outerLine", tilesets, 0, 0);
         map.createLayer("furniture", tilesets, 0, 0);
-        // map.createLayer("furniture2", tilesets, 0, 0);
-        // map.createLayer("stuff", tilesets, 0, 0);
         map.createLayer("stuff2", tilesets, 0, 0);
 
-        const furniture2 = map.createLayer("furniture2", tilesets, 0, 0);
-        const stuff = map.createLayer("stuff", tilesets, 0, 0);
+        this.furniture2 = map.createLayer("furniture2", tilesets, 0, 0);
+        this.stuff = map.createLayer("stuff", tilesets, 0, 0);
         this.player = this.physics.add.sprite(96, 90, "player", 0);
 
         this.player.setDepth(10);
-        furniture2?.setDepth(100);
-        stuff?.setDepth(100);
+        this.furniture2?.setDepth(100);
+        this.stuff?.setDepth(100);
 
         this.cameras.main.setZoom(3);
         this.cameras.main.centerOn(
@@ -398,35 +402,50 @@ export class Workroom extends Scene {
             this.player.setFrame(idleFrames[this.lastDirection]);
         }
 
-        // const body = this.player.body;
+        // 의자 depth 조절
+        const chairY = 80; // 의자 기준 Y값에 맞게 조정
 
-        // if (body instanceof Physics.Arcade.Body && body.velocity.length() > 0) {
-        //     body.velocity.normalize().scale(speed);
-        // }
+        if (this.player.y < chairY) {
+            // 캐릭터가 의자 뒤쪽
+            this.furniture2?.setDepth(100);
+            this.stuff?.setDepth(100);
+            this.player.setDepth(10);
+        } else {
+            // 캐릭터가 의자 앞쪽
+            this.furniture2?.setDepth(10);
+            this.stuff?.setDepth(10);
+            this.player.setDepth(100);
+        }
 
-        // this.interactionText.setVisible(
-        //     this.isNearComputer && !this.isPopupOpen,
-        // );
-        // this.interactionText.setPosition(
-        //     this.computerZone.x,
-        //     this.computerZone.y - 40,
-        // );
+        const body = this.player.body;
 
-        // this.isNearComputer = this.physics.overlap(
-        //     this.player,
-        //     this.computerZone,
-        // );
+        if (body instanceof Physics.Arcade.Body && body.velocity.length() > 0) {
+            body.velocity.normalize().scale(speed);
+        }
 
-        // if (this.isNearComputer && Input.Keyboard.JustDown(this.keys.E)) {
-        //     this.isPopupOpen = true;
-        //     this.portfolioPopup.setVisible(true);
-        // }
+        this.interactionText.setVisible(
+            this.isNearComputer && !this.isPopupOpen,
+        );
+        this.interactionText.setPosition(
+            this.computerZone.x,
+            this.computerZone.y - 40,
+        );
 
-        // if (this.isPopupOpen) {
-        //     this.player.setVelocity(0);
-        //     this.player.anims.stop();
-        //     return;
-        // }
+        this.isNearComputer = this.physics.overlap(
+            this.player,
+            this.computerZone,
+        );
+
+        if (this.isNearComputer && Input.Keyboard.JustDown(this.keys.E)) {
+            this.isPopupOpen = true;
+            this.portfolioPopup.setVisible(true);
+        }
+
+        if (this.isPopupOpen) {
+            this.player.setVelocity(0);
+            this.player.anims.stop();
+            return;
+        }
     }
 }
 
