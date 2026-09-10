@@ -1,4 +1,12 @@
 { "compressionlevel":-1,
+ "editorsettings":
+    {
+     "export":
+        {
+         "format":"json",
+         "target":"workroom2.json"
+        }
+    },
  "height":8,
  "infinite":false,
  "layers":[

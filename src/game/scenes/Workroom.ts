@@ -64,9 +64,17 @@ export class Workroom extends Scene {
         map.createLayer("wall", tilesets, 0, 0);
         map.createLayer("outerLine", tilesets, 0, 0);
         map.createLayer("furniture", tilesets, 0, 0);
-        map.createLayer("furniture2", tilesets, 0, 0);
-        map.createLayer("stuff", tilesets, 0, 0);
+        // map.createLayer("furniture2", tilesets, 0, 0);
+        // map.createLayer("stuff", tilesets, 0, 0);
         map.createLayer("stuff2", tilesets, 0, 0);
+
+        const furniture2 = map.createLayer("furniture2", tilesets, 0, 0);
+        const stuff = map.createLayer("stuff", tilesets, 0, 0);
+        this.player = this.physics.add.sprite(96, 90, "player", 0);
+
+        this.player.setDepth(10);
+        furniture2?.setDepth(100);
+        stuff?.setDepth(100);
 
         this.cameras.main.setZoom(3);
         this.cameras.main.centerOn(
@@ -81,11 +89,14 @@ export class Workroom extends Scene {
         // this.add.rectangle(510, 390, 50, 50, 0x9a6e4d); // 의자
         // this.add.rectangle(510, 290, 40, 40, 0x4e7ca5);
         // const player = this.add.rectangle(96, 120, 12, 12, 0x4f86b3);
-        this.player = this.physics.add.sprite(96, 90, "player", 0);
+        // this.player = this.physics.add.sprite(96, 90, "player", 0);
+
         const body = this.player.body;
         if (body instanceof Physics.Arcade.Body) {
-            body.setSize(14, 10);
-            body.setOffset(9, 20);
+            // body.setSize(14, 10);
+            // body.setOffset(9, 20);
+            body.setSize(8, 5);
+            body.setOffset(12, 25);
         }
         this.anims.create({
             key: "walk-down",
@@ -272,35 +283,35 @@ export class Workroom extends Scene {
             .setScale(1 / 3)
             .setVisible(false);
 
-        // const project = projects[this.selectedProjectIndex];
+        const project = projects[this.selectedProjectIndex];
 
-        // const collisionLayer = map.getObjectLayer("collision");
-        // const collisionGroup = this.physics.add.staticGroup();
+        const collisionLayer = map.getObjectLayer("collision");
+        const collisionGroup = this.physics.add.staticGroup();
 
-        // collisionLayer?.objects.forEach((object) => {
-        //     if (
-        //         object.x === undefined ||
-        //         object.y === undefined ||
-        //         object.width === undefined ||
-        //         object.height === undefined
-        //     ) {
-        //         return;
-        //     }
+        collisionLayer?.objects.forEach((object) => {
+            if (
+                object.x === undefined ||
+                object.y === undefined ||
+                object.width === undefined ||
+                object.height === undefined
+            ) {
+                return;
+            }
 
-        //     const collisionBox = this.add.rectangle(
-        //         object.x + object.width / 2,
-        //         object.y + object.height / 2,
-        //         object.width,
-        //         object.height,
-        //     );
+            const collisionBox = this.add.rectangle(
+                object.x + object.width / 2,
+                object.y + object.height / 2,
+                object.width,
+                object.height,
+            );
 
-        //     collisionBox.setVisible(false);
+            collisionBox.setVisible(true);
 
-        //     this.physics.add.existing(collisionBox, true);
-        //     collisionGroup.add(collisionBox);
-        // });
+            this.physics.add.existing(collisionBox, true);
+            collisionGroup.add(collisionBox);
+        });
 
-        // this.physics.add.collider(this.player, collisionGroup);
+        this.physics.add.collider(this.player, collisionGroup);
 
         this.keys = this.input.keyboard?.addKeys({
             W: Input.Keyboard.KeyCodes.W,
